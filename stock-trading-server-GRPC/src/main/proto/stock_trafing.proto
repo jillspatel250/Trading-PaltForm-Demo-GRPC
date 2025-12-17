@@ -1,0 +1,24 @@
+syntax = "proto3";
+package stocktrading;
+option java_multiple_files=true;//this means service and class ne je pan che e badha ni ek ek ni alag alag file banvi joiee
+option java_package="com.einfochips.grpc";
+option java_outer_classname="StockTradingProto";//this means jetla pan class che ene aa ek class ma chelle karjo
+
+
+//service is similer to interface
+service StockTradingService{
+  //UNARY - RPC -> get current file stock
+  rpc getStockPrice(StockRequest) returns (StockResponse);
+
+
+}
+
+//this is same as Class or DTO
+message StockRequest{
+  string stock_symbol=1;
+}
+message StockResponse{
+  string stock_symbol=1;
+  double price=2;
+  string timestamp=3;
+}
