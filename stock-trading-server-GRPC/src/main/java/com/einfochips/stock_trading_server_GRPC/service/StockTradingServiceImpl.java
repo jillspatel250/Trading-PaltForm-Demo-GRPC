@@ -1,8 +1,6 @@
 package com.einfochips.stock_trading_server_GRPC.service;
 
-import com.einfochips.grpc.StockRequest;
-import com.einfochips.grpc.StockResponse;
-import com.einfochips.grpc.StockTradingServiceGrpc;
+import com.einfochips.grpc.*;
 import com.einfochips.stock_trading_server_GRPC.entity.Stock;
 import com.einfochips.stock_trading_server_GRPC.repository.StockRepository;
 import io.grpc.stub.StreamObserver;
@@ -61,5 +59,40 @@ public class StockTradingServiceImpl extends StockTradingServiceGrpc.StockTradin
         } catch (Exception ex) {
             responseObserver.onError(ex);
         }
+    }
+
+    @Override
+    public StreamObserver<StockOrder> bulkStockOrder(StreamObserver<OrderSummary> responseObserver) {
+        return new StreamObserver<StockOrder>() {
+
+            private int totalOrders=0;
+            private double totalAmount=0;
+            private int successCount=0;
+            @Override
+            public void onNext(StockOrder stockOrder) {
+                totalOrders++;
+                totalAmount=totalAmount+stockOrder.getPrice()*stockOrder.getQuantity();
+                successCount++;
+                System.out.println("Recived order :"+stockOrder);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                System.out.println("Server unable to process request "+throwable.getMessage());
+            }
+
+            //in thhis we return single response when all request process from server side..
+            //so this method is imp in client-side streaming
+            @Override
+            public void onCompleted() {
+                OrderSummary summary=OrderSummary.newBuilder()
+                        .setTotalOrders(totalOrders)
+                        .setSuccessCount(successCount)
+                        .setTotalAmount(totalAmount)
+                        .build();
+                responseObserver.onNext(summary);
+                responseObserver.onCompleted();
+            }
+        };
     }
 }

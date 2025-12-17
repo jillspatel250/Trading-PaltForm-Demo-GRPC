@@ -1,8 +1,6 @@
 package com.einfochips.stock_trading_client_GRPC.service;
 
-import com.einfochips.grpc.StockRequest;
-import com.einfochips.grpc.StockResponse;
-import com.einfochips.grpc.StockTradingServiceGrpc;
+import com.einfochips.grpc.*;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
@@ -54,5 +52,64 @@ public class StockClientService {
         });
     }
 
+        public void placeBulkOrder(){
+            StreamObserver<OrderSummary> responseObserver = new StreamObserver<OrderSummary>() {
+                @Override
+                public void onNext(OrderSummary orderSummary) {
+                    System.out.println("OrderSummary recived from server:");
+                    System.out.println("Total Orders:"+orderSummary.getTotalOrders());
+                    System.out.println("Successfull orders"+orderSummary.getSuccessCount());
+                    System.out.println("Total Amount : $"+orderSummary.getTotalAmount());
+                }
 
-}
+                @Override
+                public void onError(Throwable throwable) {
+                    System.out.println("Order summary Recived error from server"+throwable.getMessage());
+                }
+
+                @Override
+                public void onCompleted() {
+                    System.out.println("Steam Completed , sever id done sending summary!!");
+                }
+            };
+            StreamObserver<StockOrder> requestObserver = stockTradingServiceStub.bulkStockOrder(responseObserver);
+
+            //send multiple stream of stock order message/request
+            try {
+
+                requestObserver.onNext(StockOrder.newBuilder()
+                        .setOrderId("1")
+                        .setStockSymbol("AAPL")
+                        .setOrderType("BUY")
+                        .setPrice(150.5)
+                        .setQuantity(10)
+                        .build());
+
+                requestObserver.onNext(StockOrder.newBuilder()
+                        .setOrderId("2")
+                        .setStockSymbol("GOOGL")
+                        .setOrderType("SELL")
+                        .setPrice(2700.0)
+                        .setQuantity(5)
+                        .build());
+
+                requestObserver.onNext(StockOrder.newBuilder()
+                        .setOrderId("3")
+                        .setStockSymbol("TSLA")
+                        .setOrderType("BUY")
+                        .setPrice(700.0)
+                        .setQuantity(8)
+                        .build());
+
+                //done sending orders
+                requestObserver.onCompleted();
+            } catch (Exception ex) {
+                requestObserver.onError(ex);
+            }
+        }
+
+
+    }
+
+
+
