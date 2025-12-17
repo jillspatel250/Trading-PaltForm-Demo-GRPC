@@ -10,6 +10,9 @@ service StockTradingService{
   //UNARY - RPC -> get current file stock
   rpc getStockPrice(StockRequest) returns (StockResponse);
 
+  //server steaming // in output we send steam of object of StockResponse
+  rpc subscibeStockPrice(StockRequest) returns (stream StockResponse);
+
 
 }
 

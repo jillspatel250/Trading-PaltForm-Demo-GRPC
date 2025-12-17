@@ -17,6 +17,6 @@ public class StockTradingClientGrpcApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-		System.out.println("stock price is "+stockClientService.getStockPirce("AMZN"));
+		stockClientService.subscibeStockPrice("AMZN");
 	}
 }
