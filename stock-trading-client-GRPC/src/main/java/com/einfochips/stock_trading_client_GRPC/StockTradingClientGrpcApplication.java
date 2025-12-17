@@ -17,6 +17,6 @@ public class StockTradingClientGrpcApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-		stockClientService.placeBulkOrder();
+		stockClientService.startLiveTrading();
 	}
 }

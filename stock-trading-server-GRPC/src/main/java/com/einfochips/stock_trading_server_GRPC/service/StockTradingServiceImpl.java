@@ -9,6 +9,8 @@ import org.springframework.grpc.server.service.GrpcService;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -91,6 +93,41 @@ public class StockTradingServiceImpl extends StockTradingServiceGrpc.StockTradin
                         .setTotalAmount(totalAmount)
                         .build();
                 responseObserver.onNext(summary);
+                responseObserver.onCompleted();
+            }
+        };
+    }
+
+    @Override
+    public StreamObserver<StockOrder> liveTrading(StreamObserver<TradeStatus> responseObserver) {
+        return new StreamObserver<StockOrder>() {
+            @Override
+            public void onNext(StockOrder stockOrder) {
+                //for every request we need to return tradeStatus so we wrote that logic
+                System.out.println("Recived order :"+ stockOrder);
+                String status="EXECUTED";
+                String message="Order Placed successfully";
+                if(stockOrder.getQuantity()<=0){
+                    status="FAILED";
+                    message="Invalid quantity";
+                }
+                TradeStatus tradeStatus = TradeStatus.newBuilder()
+                        .setOrderId(stockOrder.getOrderId())
+                        .setMessage(message)
+                        .setStatus(status)
+                        .setTimestamp(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME))
+                        .build();
+
+                responseObserver.onNext(tradeStatus);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                System.out.println("error"+throwable.getMessage());
+            }
+
+            @Override
+            public void onCompleted() {
                 responseObserver.onCompleted();
             }
         };

@@ -109,6 +109,43 @@ public class StockClientService {
         }
 
 
+        public void startLiveTrading() throws InterruptedException {
+            StreamObserver<StockOrder> requestObserver = stockTradingServiceStub.liveTrading(new StreamObserver<TradeStatus>() {
+                @Override
+                public void onNext(TradeStatus tradeStatus) {
+                    //what ever response server jode thi avse e ahiya capture thase
+                    System.out.println("Server response" + tradeStatus);
+                }
+
+                @Override
+                public void onError(Throwable throwable) {
+                    System.out.println("error" + throwable.getMessage());
+                }
+
+                @Override
+                public void onCompleted() {
+                    System.out.println("Stream Completed");
+                }
+
+                //now  uper toh server jode thi je tradeStatus ave che response ma ej apde kam karyu ene print karyu
+                //but in bi-directional client need to also send the request so e pan apde mokalvi padse
+                //SENDING MULTIPLE ORDER REQUEST FROM CLIENT
+            });
+            for(int i=0;i<10;i++){
+                StockOrder stockOrder=StockOrder.newBuilder()
+                        .setStockSymbol("APPL")
+                        .setOrderId("ORDER-"+i)
+                        .setQuantity(i*10)
+                        .setPrice(150+i)
+                        .setOrderType("BUY")
+                        .build();
+                requestObserver.onNext(stockOrder);
+                Thread.sleep(500);
+            }
+            requestObserver.onCompleted();
+        }
+
+
     }
 
 
